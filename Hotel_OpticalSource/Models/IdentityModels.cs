@@ -1,4 +1,7 @@
-﻿using System.Data.Entity;
+﻿using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity;
@@ -16,6 +19,26 @@ namespace Hotel_OpticalSource.Models
             // Add custom user claims here
             return userIdentity;
         }
+
+        public string Name { get; set; }
+
+        public string Address { get; set; }
+        public bool IsActive { get; set; }
+        public DateTime Date { get; set; }
+
+
+        //[NotMapped]
+        /*returns a list of all the guest*/
+
+        // public virtual List<Guest> Guests => new ApplicationDbContext().Guests.ToList();
+        public virtual List<Room_Usage> Room_Usages =>
+            new ApplicationDbContext().Room_Usage.ToList().ToList().Where(x => x.Guest_Id == Id).ToList();
+
+
+
+
+
+
     }
 
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>

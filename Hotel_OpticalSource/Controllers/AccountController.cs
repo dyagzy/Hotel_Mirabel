@@ -9,6 +9,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Hotel_OpticalSource.Models;
+using Microsoft.AspNet.Identity.EntityFramework;
 
 namespace Hotel_OpticalSource.Controllers
 {
@@ -68,6 +69,49 @@ namespace Hotel_OpticalSource.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Login(LoginViewModel model, string returnUrl)
         {
+            ViewBag.ReturnUrl = returnUrl;
+            ApplicationDbContext db = new ApplicationDbContext();
+            if (db.Roles.SingleOrDefault( m => m.Name =="Administrator") == null)
+            {
+                db.Roles.Add(new IdentityRole { Name = "Administrator" });
+                db.SaveChanges();
+            }
+
+            if (db.Roles.SingleOrDefault(m => m.Name == "Guest") == null)
+            {
+                db.Roles.Add(new IdentityRole { Name = "Guest" });
+                db.SaveChanges();
+            }
+
+            
+
+            if (this.UserManager.FindByName("Administrator") == null)
+            {
+                var user = new ApplicationUser
+                {
+                    UserName = "Administrator",
+                    Email = "hotel@gmail.com",
+                    PhoneNumber = "+2348060335871",
+                    FirstName = "Site",
+                    LastName = "Administrator",
+                    IsActive = true,
+                    Date = DateTime.Now,
+                    Roles = "Administrator"
+                };
+
+                var roles = db.Roles.Where(m => m.Name == "Administrator").FirstOrDefault();
+                var results = await this.UserManager.CreateAsync(user, "password 1");
+                if (results.Succeeded)
+                {
+                    db.Users.SingleOrDefault(x => x.UserName == "Administrator")
+                        .Roles.Add(new IdentityUserRole { RoleId = roles.Id });
+                    db.SaveChanges();
+                }
+            }
+
+
+
+
             if (!ModelState.IsValid)
             {
                 return View(model);
